@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs"
+import bcryptjs from "bcryptjs"
 import User from "../models/user.model.js"
 import { errorHandler } from "../utils/error.js"
 import jwt from "jsonwebtoken"
@@ -10,7 +10,7 @@ export const signup = async (req, res, next) => {
         return next(errorHandler(400, "All fields are required"))
     }
 
-  const hashedPassword = bcrypt.hashSync(password, 10)
+  const hashedPassword = bcryptjs.hashSync(password, 10)
 
   const newUser = new User({
     username, 
@@ -39,7 +39,7 @@ export const signin = async (req, res, next) => {
         return next(errorHandler(404, "User not found"))
       }
 
-        const validPassword = bcrypt.compareSync(password, validUser.password)
+        const validPassword = bcryptjs.compareSync(password, validUser.password)
 
         if (!validPassword) {
           return next(errorHandler(400, "Worng Credentials"))
