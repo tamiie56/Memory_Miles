@@ -12,7 +12,7 @@ const Home = () => {
   // Get all travel stories
   const getAllTravelStories = async () => {
     try {
-      const response = await axiosInstance.get("/travelstory/get-all")
+      const response = await axiosInstance.get("/travelStory/get-all")
 
       if (response.data && response.data.stories) {
         setAllStories(response.data.stories)
@@ -32,7 +32,7 @@ const Home = () => {
 
     try {
       const response = await axiosInstance.put(
-        "travelStory/update-is-favorite/" + storyId,
+        "/travelStory/update-is-favorite/" + storyId,
         {
           isFavorite: !storyData.isFavorite,
         }
@@ -46,7 +46,7 @@ const Home = () => {
       console.log("Something went wrong. Please try again.")
     }
 
-  }
+  };
 
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const Home = () => {
                       story={item.story}
                       date={item.visitedDate}
                       visitedLocation={item.visitedLocation}
-                      isFavourite={item.isFavorite}
+                      isFavorite={item.isFavorite}
                       onEdit={() => handleEdit(item)}
                       onClick={() => handleViewStory(item)}
                       onFavouriteClick={() => updateIsFavourite(item)}
