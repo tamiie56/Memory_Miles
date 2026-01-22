@@ -34,7 +34,7 @@ const AddEditTravelStory = ({
         imageUrl = imgUploadRes.imageUrl || ""
       }
 
-      const response = await axiosInstance.post("/travelStory/add-travel-story", {
+      const response = await axiosInstance.post("/travelStory/add", {
         title,
         story,
         imageUrl: imageUrl || "",
