@@ -137,7 +137,7 @@ const AddEditTravelStory = ({
   const handleDeleteStoryImage = async () => {
     // Deleting the image
     const deleteImageResponse = await axiosInstance.delete(
-      "/travel-story/delete-image",
+      "/travelStory/delete-image",
       {
         params: {
           imageUrl: storyInfo.imageUrl,
