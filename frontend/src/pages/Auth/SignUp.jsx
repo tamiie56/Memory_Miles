@@ -3,18 +3,17 @@ import PasswordInput from "../../components/PasswordInput"
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../utils/axiosInstance"
 import { validateEmail } from "../../utils/helper"
-import { useDispatch, useSelector } from "react-redux"
 
 const SignUp = () => {
   const navigate = useNavigate()
-  const dispatch = useDispatch()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
 
-  const { loading } = useSelector((state) => state.user)
+  // Fix: Use local state for UI loading
+  const [loading, setLoading] = useState(false)
 
   const handleSignUp = async (e) => {
     e.preventDefault()
@@ -34,7 +33,8 @@ const SignUp = () => {
       return
     }
 
-    setError(null)
+    setError("")
+    setLoading(true) // Start loading
 
     // SignUp API call
     try {
@@ -46,9 +46,11 @@ const SignUp = () => {
 
       // handle successful sign-up response
       if (response.data) {
+        setLoading(false)
         navigate("/login")
       }
     } catch (error) {
+      setLoading(false) // Stop loading on error
       if (
         error.response &&
         error.response.data &&
@@ -108,9 +110,10 @@ const SignUp = () => {
             {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
 
             {loading ? (
-              <p className="animate-pulse w-full text-center btn-primary">
+              <button type="button" className="btn-primary flex justify-center items-center gap-2 cursor-not-allowed opacity-70">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 LOADING...
-              </p>
+              </button>
             ) : (
               <button type="submit" className="btn-primary">
                 SIGN UP
@@ -120,7 +123,7 @@ const SignUp = () => {
             <p className="text-xs text-slate-500 text-center my-4">Or</p>
 
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => navigate("/login")}
             >

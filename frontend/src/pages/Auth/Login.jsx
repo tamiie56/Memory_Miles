@@ -3,24 +3,24 @@ import PasswordInput from "../../components/PasswordInput"
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../utils/axiosInstance"
 import { validateEmail } from "../../utils/helper"
-import { useDispatch, useSelector } from "react-redux"
-import { signInStart, signInSuccess } from "../../redux/slice/userSlice"
+import { useDispatch } from "react-redux"
+import { signInStart, signInSuccess, signInFailure } from "../../redux/slice/userSlice"
 
 const Login = () => {
-  
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-
-  const { loading } = useSelector((state) => state.user)
+  
+  // Fix: Use local state for UI loading to prevent "stuck" loading from Redux
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-     if (!validateEmail(email)) {
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address.")
       return
     }
@@ -30,10 +30,12 @@ const Login = () => {
       return
     }
 
-    setError(null)
+    setError("")
+    setLoading(true) // Start loading
 
     // Login API call
     try {
+      // Still dispatch these to update global user state, but don't rely on them for the button UI
       dispatch(signInStart())
 
       const response = await axiosInstance.post("/auth/signin", {
@@ -45,18 +47,18 @@ const Login = () => {
         dispatch(signInSuccess(response.data))
         navigate("/")
       }
+      // Note: We don't set loading false here because we are navigating away
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setError(error.response.data.message)
-      } else {
-        setError("Something went wrong. Please try again.")
-      }
-    }
+      setLoading(false) // Stop loading on error
+      
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Something went wrong. Please try again."
 
+      setError(errorMessage)
+      dispatch(signInFailure(errorMessage))
+    }
   }
 
   return (
@@ -95,12 +97,13 @@ const Login = () => {
               }}
             />
 
-             {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
+            {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
 
             {loading ? (
-             <p className="animate-pulse w-full text-center btn-primary">
+              <button type="button" className="btn-primary flex justify-center items-center gap-2 cursor-not-allowed opacity-70">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 LOADING...
-              </p>
+              </button>
             ) : (
               <button type="submit" className="btn-primary">
                 LOGIN
@@ -110,7 +113,7 @@ const Login = () => {
             <p className="text-xs text-slate-500 text-center my-4">Or</p>
 
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => navigate("/sign-up")}
             >
