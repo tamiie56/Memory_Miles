@@ -15,11 +15,13 @@ const AddEditTravelStory = ({
   onClose,
   getAllTravelStories,
 }) => {
-  const [visitedDate, setVisitedDate] = useState(null)
-  const [title, setTitle] = useState("")
-  const [storyImg, setStoryImg] = useState(null)
-  const [story, setStory] = useState("")
-  const [visitedLocation, setVisitedLocation] = useState([])
+  const [visitedDate, setVisitedDate] = useState(storyInfo?.visitedDate || null)
+  const [title, setTitle] = useState(storyInfo?.title || "")
+  const [storyImg, setStoryImg] = useState(storyInfo?.imageUrl || null)
+  const [story, setStory] = useState(storyInfo?.story || "")
+  const [visitedLocation, setVisitedLocation] = useState(
+    storyInfo?.visitedLocation || []
+  )
 
   const [error, setError] = useState("")
 
@@ -56,7 +58,58 @@ const AddEditTravelStory = ({
     }
   }
 
-  const updateTravelStory = async () => {}
+  const updateTravelStory = async () => {
+    const storyId = storyInfo._id
+
+    try {
+      let imageUrl = ""
+
+      let postData = {
+        title,
+        story,
+        imageUrl: storyInfo.imageUrl || "",
+        visitedLocation,
+        visitedDate: visitedDate
+          ? moment(visitedDate).valueOf()
+          : moment().valueOf(),
+      }
+
+      if (typeof storyImg === "object") {
+        // Upload new image
+        const imageUploadRes = await uploadImage(storyImg)
+
+        imageUrl = imageUploadRes.imageUrl || ""
+
+        postData = {
+          ...postData,
+          imageUrl: imageUrl,
+        }
+      }
+
+      const response = await axiosInstance.post(
+        "/travelStory/edit-story/" + storyId,
+        postData
+      )
+
+      if (response.data && response.data.story) {
+        toast.success("Story updated successfully!")
+
+        getAllTravelStories()
+
+        onClose()
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setError(error.response.data.message)
+      } else {
+        setError("Something went wrong! Please try again.")
+      }
+    }
+  }
 
   const handleAddOrUpdateClick = () => {
     if (!title) {
@@ -81,7 +134,44 @@ const AddEditTravelStory = ({
   
   
 
-  const handleDeleteStoryImage = () => {}
+  const handleDeleteStoryImage = async () => {
+    // Deleting the image
+    const deleteImageResponse = await axiosInstance.delete(
+      "/travel-story/delete-image",
+      {
+        params: {
+          imageUrl: storyInfo.imageUrl,
+        },
+      }
+    )
+
+    if (deleteImageResponse.data) {
+      const storyId = storyInfo._id
+
+      const postData = {
+        title,
+        story,
+        visitedLocation,
+        visitedDate: moment().valueOf(),
+        imageUrl: "",
+      }
+
+      // updating story
+
+      const response = await axiosInstance.post(
+        "/travel-story/edit-story/" + storyId,
+        postData
+      )
+
+      if (response.data) {
+        toast.success("Story image deleted successfully")
+
+        setStoryImg(null)
+
+        getAllTravelStories()
+      }
+    }
+  }
 
   return (
     <div className="relative">
