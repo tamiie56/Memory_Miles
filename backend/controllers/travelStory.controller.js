@@ -145,32 +145,29 @@ export const deleteTravelStory = async (req, res, next) => {
     const { id } = req.params
     const userId = req.user.id
 
-    try{
-        const travelStory = await TravelStory.findOneAndDelete({ _id: id, userId: userId })
-        if(!travelStory){
+    try {
+        const travelStory = await TravelStory.findOne({ _id: id, userId: userId })
+        if (!travelStory) {
             return next(errorHandler(404, "Travel story not found"))
         }
-        
-        //delete travel story from the database
+
+        // database থেকে ডিলিট
         await TravelStory.deleteOne({ _id: id, userId: userId })
 
-        //Extract filename from imageUrl
+        const placeholderImageUrl = `http://localhost:3000/assets/placeholderImage.png`
         const imageUrl = travelStory.imageUrl
-        const filename = path.basename(imageUrl)
 
-        //Delete the file path
-        const filePath = path.join(rootDir, "uploads", filename)
+       if (imageUrl && imageUrl !== placeholderImageUrl) {
+         const filename = path.basename(imageUrl)
+         const filePath = path.join(rootDir, "uploads", filename)
 
-        //Check if the file exists
-        if (!fs.existsSync(filePath)){
-            return next(errorHandler(404, "Image not found"))
-        }
-        //Delete the file
-        await fs.promises.unlink(filePath)
-
-        res.status(200).json({message: "Travel story deleted successfully"})
-
-    } catch(error){
+    // file.existsSync এর বদলে fs.existsSync হবে
+       if (fs.existsSync(filePath)) { 
+         await fs.promises.unlink(filePath)
+    }
+}
+        res.status(200).json({ message: "Travel story deleted successfully" })
+    } catch (error) {
         next(error)
     }
 }
