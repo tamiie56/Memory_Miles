@@ -97,7 +97,7 @@ const Home = () => {
   // search story
   const onSearchStory = async (query) => {
     try {
-      const response = await axiosInstance.get("/travel-story/search", {
+      const response = await axiosInstance.get("/travelStory/search", {
         params: {
           query: query,
         },

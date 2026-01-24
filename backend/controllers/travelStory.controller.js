@@ -206,7 +206,7 @@ export const searchTravelStory = async (req, res, next) => {
                 { visitedLocation: { $regex: query, $options: "i" } }
             ]
         }).sort({ isFavorite: -1 })     
-        res.status(200).json({ stories: searchResults, })
+        res.status(200).json({ stories: travelStories, })
     } catch (error) {
         next(error)
     }
